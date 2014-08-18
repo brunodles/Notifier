@@ -42,9 +42,11 @@ public abstract class Reflector {
         try {
             method.invoke(object, null);
         } catch (IllegalAccessException e) {
-            Loge(TAG, "IllegalAccessException?", e);
+            Loge(TAG, "IllegalAccessException? on invoke "+methodName, e);
         } catch (InvocationTargetException e) {
-            Loge(TAG, "InvocationTargetException", e);
+            Loge(TAG, "InvocationTargetException on invoke "+methodName, e);
+        } catch (Exception e) {
+            Loge(TAG, "Exception on invoke "+methodName, e);
         }
     }
 }

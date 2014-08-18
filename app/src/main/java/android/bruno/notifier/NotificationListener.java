@@ -3,7 +3,6 @@ package android.bruno.notifier;
 import android.app.Notification;
 import android.graphics.Color;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
@@ -15,15 +14,18 @@ import at.abraxas.amarino.Amarino;
 public class NotificationListener extends android.service.notification.NotificationListenerService {
 
     public static final String TAG = "NotificationListener";
-//    private Handler handler;
-//    private String lastKey;
+    public static final int VISIBLE_DELAY_MILIS = 2000;
+    public static final int INVISIBLE_DELAY_MILLIS = 5000;
+    public static final int MIN_COLOR_VALUE = 50;
+    private Handler handler;
+    private String lastKey;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
         Amarino.connect(this, Application.ARDUINO_BLUETOOTH_ADDRESS);
-//        handler = new Handler();
+        handler = new Handler();
     }
 
     @Override
@@ -35,12 +37,12 @@ public class NotificationListener extends android.service.notification.Notificat
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         Log.d(TAG, "NotificationPosted");
-//        lastKey = sbn.getKey();
+        lastKey = sbn.getKey();
         Notification notification = sbn.getNotification();
-        sendNotificationToArduino(notification);
+        sendNotificationToArduino(notification, VISIBLE_DELAY_MILIS);
     }
 
-    private void sendNotificationToArduino(Notification notification) {
+    private void sendNotificationToArduino(Notification notification, int extraDelay) {
         int ledARGB = notification.ledARGB;
         int red = Color.red(ledARGB);
         int green = Color.green(ledARGB);
@@ -48,16 +50,35 @@ public class NotificationListener extends android.service.notification.Notificat
         Log.d(TAG, String.format("LedColor = %s, R = %s, G = %s, B = %s",
                 ledARGB, red, green, blue));
 
+        if (red < MIN_COLOR_VALUE && blue < MIN_COLOR_VALUE && green < MIN_COLOR_VALUE){
+            red = 100;
+            green = 100;
+            blue = 100;
+        }
+
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'R', red);
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'G', green);
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'B', blue);
 
-//        handler.postDelayed(new ReflectionRunable(this, "clearArduino"), 5000);
+        int showingDelayMilis = extraDelay + (notification.ledOnMS > 0? notification.ledOnMS : VISIBLE_DELAY_MILIS);
+        int hidingDelayMilis = notification.ledOffMS > 0 ? notification.ledOffMS : INVISIBLE_DELAY_MILLIS;
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                clearArduino();
+            }
+        }, showingDelayMilis);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                checkTopNotification();
+            }
+        }, showingDelayMilis+hidingDelayMilis);
     }
 
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
-//        if (lastKey!=null && lastKey.equals(sbn.getKey()))
+        if (lastKey!=null && lastKey.equals(sbn.getKey()))
             clearArduino();
     }
 
@@ -77,14 +98,13 @@ public class NotificationListener extends android.service.notification.Notificat
             }
         }
         if (topNotification != null)
-            sendNotificationToArduino(topNotification.getNotification());
+            sendNotificationToArduino(topNotification.getNotification(), 0);
     }
 
-    private void clearArduino(){
+    public void clearArduino(){
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'R', 0);
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'G', 0);
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'B', 0);
-//        handler.postDelayed(new ReflectionRunable(this, "checkTopNotification"), 1000);
     }
 
 
