@@ -4,13 +4,21 @@
 MeetAndroid meetAndroid(3,2,9600); // rx tx
 int onboardLed = 13;
 
-int redLed = 11;
-int greenLed = 10;
-int blueLed = 9;
+#define redLed 11
+#define greenLed 10
+#define blueLed 9
+
+int redA;
+int greenA;
+int blueA;
+
+int nextRed;
+int nextGreen;
+int nextBlue;
 
 void setup()  
 {
-  Serial.begin(9600); 
+//  Serial.begin(9600); 
   
   pinMode(redLed, OUTPUT);
   pinMode(greenLed, OUTPUT);
@@ -37,30 +45,46 @@ void check(int color){
 void loop()
 {
   meetAndroid.receive();
+  redA = updateColor(nextRed, redA, redLed);
+  greenA = updateColor(nextGreen, greenA, greenLed);
+  blueA = updateColor(nextBlue, blueA, blueLed);
+  delay(2);
+}
+
+int updateColor(int nextColor, int actualColor, int ledPin){
+  if (nextColor > actualColor)
+    actualColor = actualColor + 1;
+  else if (nextColor < actualColor)
+    actualColor = actualColor - 1;
+  analogWrite(ledPin, actualColor);
+  return actualColor;
 }
 
 void red(byte flag, byte numOfValues)
 {
   int intensity = meetAndroid.getInt();
-  analogWrite(redLed, intensity);
-  Serial.write("red = ");
-  Serial.write(intensity);
+  nextRed = intensity;
+//  analogWrite(redLed, intensity);
+//  Serial.write("red = ");
+//  Serial.write(intensity);
 }
 
 void green(byte flag, byte numOfValues)
 {
   int intensity = meetAndroid.getInt();
-  analogWrite(greenLed, intensity);
-  Serial.write("green = ");
-  Serial.write(intensity);
+  nextGreen = intensity;
+//  analogWrite(greenLed, intensity);
+//  Serial.write("green = ");
+//  Serial.write(intensity);
 }
 
 void blue(byte flag, byte numOfValues)
 {
   int intensity = meetAndroid.getInt();
-  analogWrite(blueLed, intensity);
-  Serial.write("blue = ");
-  Serial.write(intensity);
+  nextBlue = intensity;
+//  analogWrite(blueLed, intensity);
+//  Serial.write("blue = ");
+//  Serial.write(intensity);
 }
 
 void timeTick(byte flag, byte numOfValues)

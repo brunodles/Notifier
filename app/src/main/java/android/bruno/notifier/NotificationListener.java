@@ -14,8 +14,8 @@ import at.abraxas.amarino.Amarino;
 public class NotificationListener extends android.service.notification.NotificationListenerService {
 
     public static final String TAG = "NotificationListener";
-    public static final int VISIBLE_DELAY_MILIS = 2000;
-    public static final int INVISIBLE_DELAY_MILLIS = 5000;
+    public static final int VISIBLE_DELAY_MILIS = 5000;
+    public static final int INVISIBLE_DELAY_MILLIS = 10000;
     public static final int MIN_COLOR_VALUE = 50;
     private Handler handler;
     private String lastKey;
@@ -60,20 +60,20 @@ public class NotificationListener extends android.service.notification.Notificat
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'G', green);
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'B', blue);
 
-        int showingDelayMilis = extraDelay + (notification.ledOnMS > 0? notification.ledOnMS : VISIBLE_DELAY_MILIS);
-        int hidingDelayMilis = notification.ledOffMS > 0 ? notification.ledOffMS : INVISIBLE_DELAY_MILLIS;
+//        int showingDelayMilis = extraDelay + (notification.ledOnMS > 0? notification.ledOnMS : VISIBLE_DELAY_MILIS);
+//        int hidingDelayMilis = notification.ledOffMS > 0 ? notification.ledOffMS : INVISIBLE_DELAY_MILLIS;
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 clearArduino();
             }
-        }, showingDelayMilis);
+        }, VISIBLE_DELAY_MILIS);
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 checkTopNotification();
             }
-        }, showingDelayMilis+hidingDelayMilis);
+        }, VISIBLE_DELAY_MILIS+INVISIBLE_DELAY_MILLIS);
     }
 
     @Override
