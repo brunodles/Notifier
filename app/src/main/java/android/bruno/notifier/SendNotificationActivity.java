@@ -2,79 +2,100 @@ package android.bruno.notifier;
 
 import android.app.Activity;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import yuku.ambilwarna.AmbilWarnaDialog;
 
 
-public class SendNotificationActivity extends Activity {
+public class SendNotificationActivity extends Activity implements View.OnClickListener {
 
-    public static final String TAG = "SendNotificationActivity";
-    Button selectColor;
+    public static final String TAG = "SendNotificationAct";
+    Button selectLedColor;
+    Button selectBackColor;
     Button sendNotification;
     Button openSetings;
-
-    int color = 0xff00ff00;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_notification);
 
-        selectColor = (Button) findViewById(R.id.selectColor);
+        selectLedColor = (Button) findViewById(R.id.selectLedColor);
+        selectBackColor = (Button) findViewById(R.id.selectBackColor);
         sendNotification = (Button) findViewById(R.id.sendNotification);
         openSetings = (Button) findViewById(R.id.openSetings);
+
+        selectLedColor.setTag("led");
+        selectBackColor.setTag("back");
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        selectColor.setOnClickListener(new ReflectionListener(this, "selectColor"));
-        sendNotification.setOnClickListener(new ReflectionListener(this, "sendNotification"));
-        openSetings.setOnClickListener(new ReflectionListener(this, "openSetings"));
+        selectLedColor.setOnClickListener(this);
+        selectBackColor.setOnClickListener(this);
+        sendNotification.setOnClickListener(this);
+        openSetings.setOnClickListener(this);
 
-        updateSelectColorBackgroundColor();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        selectLedColor.setBackgroundColor(preferences.getInt("led", 0xFFFFFFFF));
+        selectBackColor.setBackgroundColor(preferences.getInt("back", 0xFFFFFFFF));
     }
 
-    private void updateSelectColorBackgroundColor(){
-        selectColor.setBackgroundColor(color);
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.selectLedColor:
+                selectLedColorClick(view);
+                break;
+            case R.id.selectBackColor:
+                selectLedColorClick(view);
+                break;
+            case R.id.sendNotification:
+                sendNotification();
+                break;
+            case R.id.openSetings:
+                openSetings();
+                break;
+        }
     }
 
-    private void sendNotification(){
+    private void sendNotification() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         Log.d(TAG, "Prepare to send notification");
-        Notification notification = new Notification.Builder(this)
+        Notification notification = new NotificationCompat.Builder(this)
                 .setContentText("ContentTExt")
                 .setContentTitle("ContentTitle")
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setTicker("Ticker")
-                .setLights(color, 200, 500)
+                .setLights(preferences.getInt("led", 0x00000000), 200, 500)
+                .setColor(preferences.getInt("back", 0x00000000))
                 .build();
 
-
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-        notificationManager.notify(0, notification);
+        NotificationManagerCompat.from(this).notify(0, notification);
         Log.d(TAG, "Notification sent");
     }
 
-    public void selectColor(){
-        AmbilWarnaDialog dialog = new AmbilWarnaDialog(this, color, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+    public void selectLedColorClick(final View view) {
+        final String id = (String) view.getTag();
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        AmbilWarnaDialog dialog = new AmbilWarnaDialog(this, preferences.getInt(id, 0xFFFFFFFF), new AmbilWarnaDialog.OnAmbilWarnaListener() {
             @Override
             public void onOk(AmbilWarnaDialog dialog, int color) {
-                SendNotificationActivity.this.color = color;
-                updateSelectColorBackgroundColor();
+                preferences
+                        .edit()
+                        .putInt(id, color)
+                        .commit();
+                view.setBackgroundColor(color);
             }
 
             @Override
@@ -85,11 +106,8 @@ public class SendNotificationActivity extends Activity {
         dialog.show();
     }
 
-    public void openSetings(){
+    public void openSetings() {
         Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
         startActivity(intent);
-
     }
-
-
 }
