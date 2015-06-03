@@ -64,15 +64,11 @@ public class NotificationListener extends android.service.notification.Notificat
     public void checkTopNotification(){
         StatusBarNotification[] notifications = getActiveNotifications();
         StatusBarNotification topNotification = null;
-        int topPriority = 0;
+        int topPriority = Notification.PRIORITY_MIN;
         for (StatusBarNotification notification: notifications){
-            if (topNotification == null) {
+            if (notification.getNotification().priority > topPriority){
                 topNotification = notification;
-                topPriority = topNotification.getNotification().priority;
-                continue;
-            } else if (notification.getNotification().priority > topPriority){
-                topNotification = notification;
-                topPriority = topNotification.getNotification().priority;
+                topPriority = notification.getNotification().priority;
                 continue;
             }
         }
