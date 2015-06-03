@@ -59,6 +59,7 @@ public class NotificationListener extends android.service.notification.Notificat
     public void onNotificationRemoved(StatusBarNotification sbn) {
         if (lastKey!=null && lastKey.equals(sbn.getKey()))
             clearArduino();
+        checkTopNotification();
     }
 
     public void checkTopNotification(){
