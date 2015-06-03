@@ -14,10 +14,7 @@ import at.abraxas.amarino.Amarino;
 public class NotificationListener extends android.service.notification.NotificationListenerService {
 
     public static final String TAG = "NotificationListener";
-    public static final int VISIBLE_DELAY_MILIS = 5000;
-    public static final int INVISIBLE_DELAY_MILLIS = 10000;
     public static final int MIN_COLOR_VALUE = 50;
-    private Handler handler;
     private String lastKey;
 
 
@@ -25,7 +22,6 @@ public class NotificationListener extends android.service.notification.Notificat
     public void onCreate() {
         super.onCreate();
         Amarino.connect(this, Application.ARDUINO_BLUETOOTH_ADDRESS);
-        handler = new Handler();
     }
 
     @Override
@@ -39,10 +35,10 @@ public class NotificationListener extends android.service.notification.Notificat
         Log.d(TAG, "NotificationPosted");
         lastKey = sbn.getKey();
         Notification notification = sbn.getNotification();
-        sendNotificationToArduino(notification, VISIBLE_DELAY_MILIS);
+        sendNotificationToArduino(notification);
     }
 
-    private void sendNotificationToArduino(Notification notification, int extraDelay) {
+    private void sendNotificationToArduino(Notification notification) {
         int ledARGB = notification.ledARGB;
         int red = Color.red(ledARGB);
         int green = Color.green(ledARGB);
@@ -59,21 +55,6 @@ public class NotificationListener extends android.service.notification.Notificat
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'R', red);
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'G', green);
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'B', blue);
-
-//        int showingDelayMilis = extraDelay + (notification.ledOnMS > 0? notification.ledOnMS : VISIBLE_DELAY_MILIS);
-//        int hidingDelayMilis = notification.ledOffMS > 0 ? notification.ledOffMS : INVISIBLE_DELAY_MILLIS;
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                clearArduino();
-            }
-        }, VISIBLE_DELAY_MILIS);
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                checkTopNotification();
-            }
-        }, VISIBLE_DELAY_MILIS+INVISIBLE_DELAY_MILLIS);
     }
 
     @Override
@@ -98,7 +79,7 @@ public class NotificationListener extends android.service.notification.Notificat
             }
         }
         if (topNotification != null)
-            sendNotificationToArduino(topNotification.getNotification(), 0);
+            sendNotificationToArduino(topNotification.getNotification());
     }
 
     public void clearArduino(){
