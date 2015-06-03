@@ -12,6 +12,8 @@ MeetAndroid meetAndroid(3,2,9600); // rx tx
 #define mainLoopDelay 5
 #define bluetoothDelay 1000
 
+#define maxColorMod 500
+
 int redA;
 int greenA;
 int blueA;
@@ -21,6 +23,9 @@ int nextGreen;
 int nextBlue;
 
 int count;
+
+int colorMod;
+boolean showColors;
 
 void setup()  
 {
@@ -51,22 +56,34 @@ void check(int color){
 void loop()
 {
   checkBluetooth();
-  
-  redA = updateColor(nextRed, redA, redLed);
-  greenA = updateColor(nextGreen, greenA, greenLed);
-  blueA = updateColor(nextBlue, blueA, blueLed);
-  
+  changeColors();
   delay(mainLoopDelay);
 }
 
 void checkBluetooth(){
   if (count == 0) 
     meetAndroid.receive();
-  
   count = count + mainLoopDelay;
-  
   if (count > bluetoothDelay)
     count = 0;
+}
+
+void changeColors(){
+  colorMod = colorMod + 1;
+  if (colorMod > maxColorMod){
+    showColors = !showColors;
+    colorMod = 0;
+  }
+  
+  if (showColors) {
+    redA    = updateColor(nextRed,   redA,   redLed);
+    greenA  = updateColor(nextGreen, greenA, greenLed);
+    blueA   = updateColor(nextBlue,  blueA,  blueLed);
+  } else {
+    redA    = updateColor(0,   redA,   redLed);
+    greenA  = updateColor(0, greenA, greenLed);
+    blueA   = updateColor(0,  blueA,  blueLed);
+  }
 }
 
 int updateColor(int nextColor, int actualColor, int ledPin){
