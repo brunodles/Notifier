@@ -2,11 +2,15 @@
 #include <MeetAndroid.h>
 
 MeetAndroid meetAndroid(3,2,9600); // rx tx
-int onboardLed = 13;
+
+#define onboardLed 13
 
 #define redLed 11
 #define greenLed 10
 #define blueLed 9
+
+#define mainLoopDelay 5
+#define bluetoothDelay 1000
 
 int redA;
 int greenA;
@@ -15,6 +19,8 @@ int blueA;
 int nextRed;
 int nextGreen;
 int nextBlue;
+
+int count;
 
 void setup()  
 {
@@ -44,11 +50,23 @@ void check(int color){
 
 void loop()
 {
-  meetAndroid.receive();
+  checkBluetooth();
+  
   redA = updateColor(nextRed, redA, redLed);
   greenA = updateColor(nextGreen, greenA, greenLed);
   blueA = updateColor(nextBlue, blueA, blueLed);
-  delay(2);
+  
+  delay(mainLoopDelay);
+}
+
+void checkBluetooth(){
+  if (count == 0) 
+    meetAndroid.receive();
+  
+  count = count + mainLoopDelay;
+  
+  if (count > bluetoothDelay)
+    count = 0;
 }
 
 int updateColor(int nextColor, int actualColor, int ledPin){
