@@ -2,7 +2,7 @@ package android.bruno.notifier;
 
 import android.app.Notification;
 import android.graphics.Color;
-import android.os.Handler;
+import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
@@ -40,17 +40,21 @@ public class NotificationListener extends android.service.notification.Notificat
 
     private void sendNotificationToArduino(Notification notification) {
         int ledARGB = notification.ledARGB;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            if (ledARGB == 0)
+                ledARGB = notification.color;
         int red = Color.red(ledARGB);
         int green = Color.green(ledARGB);
         int blue = Color.blue(ledARGB);
-        Log.d(TAG, String.format("LedColor = %s, R = %s, G = %s, B = %s",
-                ledARGB, red, green, blue));
 
         if (red < MIN_COLOR_VALUE && blue < MIN_COLOR_VALUE && green < MIN_COLOR_VALUE){
             red = 100;
             green = 100;
             blue = 100;
         }
+        if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            Log.d(TAG, String.format("Notification colors\nLedColor = %06X\ncolor = %06X\nR = %s, G = %s, B = %s",
+                notification.ledARGB, notification.color, red, green, blue));
 
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'R', red);
         Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'G', green);
