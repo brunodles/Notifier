@@ -1,18 +1,17 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.1.0"
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
 
     defaultConfig {
-        applicationId "yuku.ambilwarna"
         minSdkVersion 3
-        targetSdkVersion 3
+        targetSdkVersion 22
     }
 
     buildTypes {
         release {
-            runProguard false
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
