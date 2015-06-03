@@ -14,7 +14,6 @@ import at.abraxas.amarino.Amarino;
 public class NotificationListener extends android.service.notification.NotificationListenerService {
 
     public static final String TAG = "NotificationListener";
-    public static final int MIN_COLOR_VALUE = 50;
     private String lastKey;
 
 
@@ -47,11 +46,6 @@ public class NotificationListener extends android.service.notification.Notificat
         int green = Color.green(ledARGB);
         int blue = Color.blue(ledARGB);
 
-        if (red < MIN_COLOR_VALUE && blue < MIN_COLOR_VALUE && green < MIN_COLOR_VALUE){
-            red = 100;
-            green = 100;
-            blue = 100;
-        }
         if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             Log.d(TAG, String.format("Notification colors\nLedColor = %06X\ncolor = %06X\nR = %s, G = %s, B = %s",
                 notification.ledARGB, notification.color, red, green, blue));
