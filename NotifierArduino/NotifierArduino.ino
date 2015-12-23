@@ -26,8 +26,11 @@ int nextBlue;
 int colorMod;
 boolean showColors;
 
+SoftwareSerial btSerial(bluetooth_rx, bluetooth_tx);
+
 void setup() {
     Serial.begin(9600); 
+    btSerial.begin(9600);
 
     pinMode(redLed, OUTPUT);
     pinMode(greenLed, OUTPUT);
@@ -47,49 +50,60 @@ void check(int color) {
 }
 
 void loop() {
+  if (Serial.available() > 0)
+    checkSerial();
+  if (btSerial.available() > 0)
     checkBluetooth();
-    changeColors();
-    delay(mainLoopDelay);
+  changeColors();
+  delay(mainLoopDelay);
 }
 
-void checkBluetooth() {
-    if (Serial.available() > 0) {
-            // read the incoming byte:
-            int incomingByte = Serial.read();
-            String value = Serial.readString();
-            
-            switch (incomingByte){
-              case 'r':
-                print("Red", value);
-                nextRed = value.toInt();
-              break;
-              case 'g':
-                print("Green", value);
-                nextGreen = value.toInt();
-              break;
-              case 'b':
-                print("Blue", value);
-                nextBlue = value.toInt();
-              break;
-              case '#':
-                Serial.println("Hex String ");
-                Serial.print("r ");
-                nextRed = strtoul(value.substring(0,2).c_str(), 0, 16);
-                Serial.println(nextRed);
-                Serial.print("g ");
-                nextGreen = strtoul(value.substring(2,4).c_str(), 0, 16);
-                Serial.println(nextGreen);
-                Serial.print("b ");
-                nextBlue = strtoul(value.substring(4,6).c_str(), 0, 16);
-                Serial.println(nextBlue);
-              break;
-              default:
-                Serial.print("I received: ");
-                Serial.print((char)incomingByte);
-                Serial.print(" ");
-                Serial.println(value);
-            }
-    }
+void checkSerial(){
+  int incomingByte = Serial.read();
+  String value = Serial.readString();
+  checkData(incomingByte, value);
+}
+
+void checkBluetooth(){
+  int incomingByte = btSerial.read();
+  String value = btSerial.readString();
+  checkData(incomingByte, value);
+}
+
+void checkData(int incomingByte, String value) {
+    switch (incomingByte){
+      case 'r':
+        print("Red", value);
+        nextRed = value.toInt();
+      break;
+      case 'g':
+        print("Green", value);
+        nextGreen = value.toInt();
+      break;
+      case 'b':
+        print("Blue", value);
+        nextBlue = value.toInt();
+      break;
+      case '#':
+        Serial.println("Hex String ");
+        Serial.print("r ");
+        nextRed = strtoul(value.substring(0,2).c_str(), 0, 16);
+        Serial.println(nextRed);
+        Serial.print("g ");
+        nextGreen = strtoul(value.substring(2,4).c_str(), 0, 16);
+        Serial.println(nextGreen);
+        Serial.print("b ");
+        nextBlue = strtoul(value.substring(4,6).c_str(), 0, 16);
+        Serial.println(nextBlue);
+      break;
+      default:
+        Serial.print("I received: (");
+        Serial.print(incomingByte);
+        Serial.print(") ");
+        Serial.print((char)incomingByte);
+        Serial.print(" ");
+        Serial.println(value);
+  }
 }
 
 void print(String color, String value) {

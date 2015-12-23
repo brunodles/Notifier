@@ -34,7 +34,6 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
         openSetings = (Button) findViewById(R.id.openSetings);
 
         selectLedColor.setTag("led");
-        selectBackColor.setTag("back");
     }
 
     @Override
@@ -48,7 +47,6 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         selectLedColor.setBackgroundColor(preferences.getInt("led", 0xFFFFFFFF));
-        selectBackColor.setBackgroundColor(preferences.getInt("back", 0xFFFFFFFF));
     }
 
     @Override
@@ -78,7 +76,7 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setTicker("Ticker")
                 .setLights(preferences.getInt("led", 0x00000000), 200, 500)
-                .setColor(preferences.getInt("back", 0x00000000))
+                .setColor(preferences.getInt("led", 0x00000000))
                 .build();
 
         NotificationManagerCompat.from(this).notify(0, notification);

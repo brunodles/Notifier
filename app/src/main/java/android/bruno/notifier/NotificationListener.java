@@ -6,8 +6,6 @@ import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
-import at.abraxas.amarino.Amarino;
-
 /**
  * Created by bruno on 17/08/14.
  */
@@ -20,12 +18,12 @@ public class NotificationListener extends android.service.notification.Notificat
     @Override
     public void onCreate() {
         super.onCreate();
-        Amarino.connect(this, Application.ARDUINO_BLUETOOTH_ADDRESS);
+//        Amarino.connect(this, Application.ARDUINO_BLUETOOTH_ADDRESS);
     }
 
     @Override
     public void onDestroy() {
-        Amarino.disconnect(this, Application.ARDUINO_BLUETOOTH_ADDRESS);
+//        Amarino.disconnect(this, Application.ARDUINO_BLUETOOTH_ADDRESS);
         super.onDestroy();
     }
 
@@ -50,9 +48,10 @@ public class NotificationListener extends android.service.notification.Notificat
             Log.d(TAG, String.format("Notification colors\nLedColor = %06X\ncolor = %06X\nR = %s, G = %s, B = %s",
                 notification.ledARGB, notification.color, red, green, blue));
 
-        Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'R', red);
-        Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'G', green);
-        Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'B', blue);
+
+//        Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'R', red);
+//        Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'G', green);
+//        Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'B', blue);
     }
 
     @Override
@@ -78,9 +77,9 @@ public class NotificationListener extends android.service.notification.Notificat
     }
 
     public void clearArduino(){
-        Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'R', 0);
-        Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'G', 0);
-        Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'B', 0);
+//        Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'R', 0);
+//        Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'G', 0);
+//        Amarino.sendDataToArduino(this, Application.ARDUINO_BLUETOOTH_ADDRESS, 'B', 0);
     }
 
 
