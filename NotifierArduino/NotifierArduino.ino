@@ -11,9 +11,6 @@
 #define blueLed 9
 
 #define mainLoopDelay 5
-#define bluetoothDelay 1000
-
-#define maxColorMod 500
 
 int redA;
 int greenA;
@@ -22,9 +19,6 @@ int blueA;
 int nextRed;
 int nextGreen;
 int nextBlue;
-
-int colorMod;
-boolean showColors;
 
 SoftwareSerial btSerial(bluetooth_rx, bluetooth_tx);
 
@@ -123,21 +117,9 @@ void print(String color, String value) {
 }
 
 void changeColors() {
-    colorMod = colorMod + 1;
-    if (colorMod > maxColorMod) {
-        showColors = !showColors;
-        colorMod = 0;
-    }
-
-    if (showColors) {
-        redA = updateColor(nextRed, redA, redLed);
-        greenA = updateColor(nextGreen, greenA, greenLed);
-        blueA = updateColor(nextBlue, blueA, blueLed);
-    } else {
-        redA = updateColor(0, redA, redLed);
-        greenA = updateColor(0, greenA, greenLed);
-        blueA = updateColor(0, blueA, blueLed);
-    }
+    redA = updateColor(nextRed, redA, redLed);
+    greenA = updateColor(nextGreen, greenA, greenLed);
+    blueA = updateColor(nextBlue, blueA, blueLed);
 }
 
 int updateColor(int nextColor, int actualColor, int ledPin) {
