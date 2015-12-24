@@ -36,17 +36,18 @@ void setup() {
     pinMode(greenLed, OUTPUT);
     pinMode(blueLed, OUTPUT);
 
-    digitalWrite(onboardLed, LOW);
-
-    check(redLed);
-    check(greenLed);
-    check(blueLed);
+    for (int i = 0; i < 10; i++){
+      check(redLed);
+      check(greenLed);
+      check(blueLed);
+      check(onboardLed);
+    }
 }
 
 void check(int color) {
-    analogWrite(color, 150);
-    delay(1000);
-    analogWrite(color, 0);
+    digitalWrite(color, HIGH);
+    delay(20);
+    digitalWrite(color, LOW);
 }
 
 void loop() {
@@ -83,6 +84,14 @@ void checkData(int incomingByte, String value) {
       case 'b':
         print("Blue", value);
         nextBlue = value.toInt();
+      break;
+      case '!':
+        Serial.print("Send AT command '");
+        Serial.print(value);
+        Serial.println("'");
+        btSerial.print(value);
+        Serial.print("->");
+        Serial.println(btSerial.readString());
       break;
       case '#':
         Serial.println("Hex String ");
