@@ -20,6 +20,8 @@ int nextRed;
 int nextGreen;
 int nextBlue;
 
+boolean shouldBlink;
+
 SoftwareSerial btSerial(bluetooth_rx, bluetooth_tx);
 
 void setup() {
@@ -49,8 +51,15 @@ void loop() {
     checkSerial();
   if (btSerial.available() > 0)
     checkBluetooth();
-  changeColors();
   delay(mainLoopDelay);
+  if (shouldBlink){
+    analogWrite(redLed, random(0,255));
+    analogWrite(greenLed, random(0,255));
+    analogWrite(blueLed, random(0,255));
+    delay(20);
+  } else {
+    changeColors();
+  }
 }
 
 void checkSerial(){
@@ -79,6 +88,9 @@ void checkData(int incomingByte, String value) {
         print("Blue", value);
         nextBlue = value.toInt();
       break;
+      case '.':
+        colorCommand(value);
+        break;
       case '!':
         Serial.print("Send AT command '");
         Serial.print(value);
@@ -106,6 +118,21 @@ void checkData(int incomingByte, String value) {
         Serial.print((char)incomingByte);
         Serial.print(" ");
         Serial.println(value);
+  }
+}
+
+void colorCommand(String command){
+  switch (command.charAt(0)){
+    case 'b':
+      redA = 0;
+      blueA = 0;
+      greenA = 0;
+      digitalWrite(redLed, LOW);
+      digitalWrite(greenLed, LOW);
+      digitalWrite(blueLed, LOW);
+      delay(100);
+      shouldBlink = !shouldBlink;
+    break;
   }
 }
 
