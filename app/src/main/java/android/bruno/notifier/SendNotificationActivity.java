@@ -19,7 +19,6 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
 
     public static final String TAG = "SendNotificationAct";
     Button selectLedColor;
-    Button selectBackColor;
     Button sendNotification;
     Button openSetings;
 
@@ -29,7 +28,6 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
         setContentView(R.layout.activity_send_notification);
 
         selectLedColor = (Button) findViewById(R.id.selectLedColor);
-        selectBackColor = (Button) findViewById(R.id.selectBackColor);
         sendNotification = (Button) findViewById(R.id.sendNotification);
         openSetings = (Button) findViewById(R.id.openSetings);
 
@@ -39,9 +37,7 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
     @Override
     protected void onStart() {
         super.onStart();
-
         selectLedColor.setOnClickListener(this);
-        selectBackColor.setOnClickListener(this);
         sendNotification.setOnClickListener(this);
         openSetings.setOnClickListener(this);
 
@@ -53,9 +49,6 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.selectLedColor:
-                selectLedColorClick(view);
-                break;
-            case R.id.selectBackColor:
                 selectLedColorClick(view);
                 break;
             case R.id.sendNotification:

@@ -16,12 +16,6 @@
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/selectBackColor"
-        android:text="Select Notification color"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <Button
         android:id="@+id/sendNotification"
         android:text="Send Notification"
         android:layout_width="match_parent"

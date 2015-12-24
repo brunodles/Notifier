@@ -15,7 +15,7 @@
         android:id="@+id/entry"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/label"
+        android:layout_below="@+id/label"
         android:background="@android:drawable/editbox_background"
         />
 
@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_below="@id/entry"
+        android:layout_below="@+id/entry"
         android:layout_marginLeft="10dip"
         android:text="Open"
         />
@@ -33,8 +33,8 @@
         android:id="@+id/send"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/open"
-        android:layout_toLeftOf="@id/open"
+        android:layout_alignTop="@+id/open"
+        android:layout_toLeftOf="@+id/open"
         android:text="Send"
         />
 
@@ -42,8 +42,8 @@
         android:id="@+id/close"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/send"
-        android:layout_toLeftOf="@id/send"
+        android:layout_alignTop="@+id/send"
+        android:layout_toLeftOf="@+id/send"
         android:text="Close"
         />
 </RelativeLayout>

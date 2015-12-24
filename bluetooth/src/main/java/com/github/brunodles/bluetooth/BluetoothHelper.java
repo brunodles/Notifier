@@ -1,13 +1,19 @@
 package com.github.brunodles.bluetooth;
 
 import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+
+import com.github.brunodles.bluetooth.activity_starter.ActivityActivityStarter;
+import com.github.brunodles.bluetooth.activity_starter.ActivityStarter;
+import com.github.brunodles.bluetooth.activity_starter.FragmentActivityStarter;
 
 import java.util.Set;
 
@@ -20,11 +26,27 @@ public class BluetoothHelper {
     public static final int RC_ENABLE_BLUETOOTH = 0;
     private final ActivityStarter activityStarter;
     private final Context context;
-    BluetoothAdapter mBluetoothAdapter;
+    public BluetoothAdapter mBluetoothAdapter;
 
     public BluetoothHelper(ActivityStarter activityStarter, Context context) {
         this.activityStarter = activityStarter;
         this.context = context;
+        init();
+    }
+
+    public BluetoothHelper(Fragment fragment) {
+        this.activityStarter = new FragmentActivityStarter(fragment);
+        this.context = fragment.getContext();
+        init();
+    }
+
+    public BluetoothHelper(Activity activity) {
+        this.activityStarter = new ActivityActivityStarter(activity);
+        this.context = activity;
+        init();
+    }
+
+    private void init() {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
@@ -33,7 +55,7 @@ public class BluetoothHelper {
             Log.e(TAG, "check: Sorry developer. This device don't have a bluetooth adapter.");
         } else if (!checkPermission()) {
             Log.e(TAG, "check: Need to ask for bluetooth permission.");
-        } else if (!mBluetoothAdapter.isEnabled()) {
+        } else if (!mBluetoothAdapter.isEnabled() && activityStarter != null) {
             requestEnableBluetooth();
         }
     }
@@ -57,6 +79,7 @@ public class BluetoothHelper {
     }
 
     public DeviceHelper findDevice(String address) {
+        check();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0)
             for (BluetoothDevice device : pairedDevices)

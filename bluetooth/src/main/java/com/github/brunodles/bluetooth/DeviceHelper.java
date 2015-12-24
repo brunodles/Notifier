@@ -83,7 +83,7 @@ public class DeviceHelper {
         return null;
     }
 
-    void closeBT() throws IOException {
+    public void closeBT() throws IOException {
 //        stopWorker = true;
         mmOutputStream.close();
         mmInputStream.close();

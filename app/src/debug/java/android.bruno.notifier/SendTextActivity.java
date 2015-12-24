@@ -19,7 +19,7 @@ import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
 
-public class SettingsActivity extends Activity {
+public class SendTextActivity extends Activity {
     private static final String TAG = "SettingsActivity";
     TextView myLabel;
     EditText myTextbox;
@@ -37,7 +37,7 @@ public class SettingsActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
+        setContentView(R.layout.activity_send_text);
 
         Button openButton = (Button) findViewById(R.id.open);
         Button sendButton = (Button) findViewById(R.id.send);

@@ -1,4 +1,4 @@
-package com.github.brunodles.bluetooth;
+package com.github.brunodles.bluetooth.activity_starter;
 
 import android.content.Intent;
 
@@ -14,5 +14,5 @@ import android.content.Intent;
  */
 public interface ActivityStarter {
 
-    void startActivityForResult(Intent intent, int requestCodeAttachImage);
+    void startActivityForResult(Intent intent, int requestCode);
 }
