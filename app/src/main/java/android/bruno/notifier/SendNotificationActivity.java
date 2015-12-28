@@ -21,6 +21,7 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
     Button selectLedColor;
     Button sendNotification;
     Button openSetings;
+    Button sendColor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +31,7 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
         selectLedColor = (Button) findViewById(R.id.selectLedColor);
         sendNotification = (Button) findViewById(R.id.sendNotification);
         openSetings = (Button) findViewById(R.id.openSetings);
+        sendColor = (Button) findViewById(R.id.sendColor);
 
         selectLedColor.setTag("led");
     }
@@ -40,6 +42,7 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
         selectLedColor.setOnClickListener(this);
         sendNotification.setOnClickListener(this);
         openSetings.setOnClickListener(this);
+        sendColor.setOnClickListener(this);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         selectLedColor.setBackgroundColor(preferences.getInt("led", 0xFFFFFFFF));
@@ -47,12 +50,16 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
 
     @Override
     public void onClick(View view) {
+        Log.d(TAG, "onClick() called with: " + "view = [" + view + "]");
         switch (view.getId()) {
             case R.id.selectLedColor:
                 selectLedColorClick(view);
                 break;
             case R.id.sendNotification:
                 sendNotification();
+                break;
+            case R.id.sendColor:
+                sendColor();
                 break;
             case R.id.openSetings:
                 openSetings();
@@ -74,6 +81,16 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
 
         NotificationManagerCompat.from(this).notify(0, notification);
         Log.d(TAG, "Notification sent");
+    }
+
+    private void sendColor() {
+        Log.d(TAG, "sendColor: ");
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        ColorValues color = ColorValues.from(preferences.getInt("led", 0x000000));
+        Intent intent = new Intent(this, ArduinoService.class);
+        intent.putExtra(ArduinoService.EXTRA_COLOR_HEX, color.toHexRGB());
+        Log.d(TAG, "sendColor: " + color.toHexRGB());
+        startService(intent);
     }
 
     public void selectLedColorClick(final View view) {

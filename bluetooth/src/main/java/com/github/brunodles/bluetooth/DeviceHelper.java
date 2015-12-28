@@ -53,6 +53,13 @@ public class DeviceHelper {
 
     public void sendData(String msg) throws IOException {
         msg += "\n";
+        if (mmOutputStream == null) {
+            try {
+                closeBT();
+            } catch (IOException e) {
+            }
+            openBT();
+        }
         mmOutputStream.write(msg.getBytes());
     }
 
@@ -85,8 +92,8 @@ public class DeviceHelper {
 
     public void closeBT() throws IOException {
 //        stopWorker = true;
-        mmOutputStream.close();
-        mmInputStream.close();
-        mmSocket.close();
+        if (mmOutputStream != null) mmOutputStream.close();
+        if (mmInputStream != null) mmInputStream.close();
+        if (mmSocket != null) mmSocket.close();
     }
 }

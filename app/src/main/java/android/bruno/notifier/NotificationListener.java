@@ -1,15 +1,12 @@
 package android.bruno.notifier;
 
 import android.app.Notification;
-import android.graphics.Color;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
-
-import com.github.brunodles.bluetooth.BluetoothHelper;
-import com.github.brunodles.bluetooth.DeviceHelper;
-
-import java.io.IOException;
 
 /**
  * Created by bruno on 17/08/14.
@@ -29,48 +26,26 @@ public class NotificationListener extends android.service.notification.Notificat
 
     private void sendNotificationToArduino(Notification notification) {
         int color = notification.ledARGB;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            if (color == 0)
-                color = notification.color;
-        int red = Color.red(color);
-        int green = Color.green(color);
-        int blue = Color.blue(color);
+        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) && (color == 0))
+            color = notification.color;
+        ColorValues cv = ColorValues.from(color);
 
-        if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            Log.d(TAG, String.format("Notification colors\nLedColor = %06X\ncolor = %06X\nR = %s, G = %s, B = %s",
-                    notification.ledARGB, notification.color, red, green, blue));
+        Log.d(TAG, String.format("Notification colors\nLedColor = %06X\nR = %s, G = %s, B = %s",
+                color, cv.red, cv.green, cv.blue));
 
-        sendColorToArduino(String.format("#%02x%02x%02x", red, green, blue));
+        if (cv.isBlack()) {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+            color = preferences.getInt("led", 0x000000);
+            Log.d(TAG, String.format("Using default color = %06X", color));
+            cv = ColorValues.from(color);
+        }
+        sendColorToArduino(cv.toHexRGB());
     }
 
-    private void sendColorToArduino(String color) {
-        BluetoothHelper bluetoothHelper = new BluetoothHelper(null, this);
-        final DeviceHelper device = bluetoothHelper
-                .findDevice(Application.ARDUINO_BLUETOOTH_ADDRESS);
-        if (device != null) {
-            bluetoothHelper.mBluetoothAdapter.cancelDiscovery();
-            try {
-                device.openBT();
-                Log.d(TAG, "sendColorToArduino: sendColor " + color);
-                device.sendData(color);
-            } catch (IOException e) {
-                Log.e(TAG, "sendColorToArduino: ", e);
-            }
-            Thread thread = new Thread(new Runnable() {
-                @Override public void run() {
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                    }
-                    try {
-                        device.closeBT();
-                    } catch (IOException e1) {
-                        Log.e(TAG, "sendColorToArduino.run: ", e1);
-                    }
-                }
-            });
-            thread.start();
-        }
+    private void sendColorToArduino(final String color) {
+        Intent intent = new Intent(this, ArduinoService.class);
+        intent.putExtra(ArduinoService.EXTRA_COLOR_HEX, color);
+        startService(intent);
     }
 
     @Override
