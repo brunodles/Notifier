@@ -12,7 +12,9 @@
 #define lightSensor 0
 
 #define mainLoopDelay 5
+
 #define lightDelay 250
+#define lightDivider 3
 
 int redA;
 int greenA;
@@ -168,14 +170,14 @@ void checkLight(){
   int newTime = millis() / lightDelay;
   if (newTime > time) {
     time = newTime;
-//    Serial.print("Time ");
-//    Serial.print(newTime);
-//    Serial.print(" ,lightSensor ");
+    Serial.print("Time ");
+    Serial.print(newTime);
+    Serial.print(" ,lightSensor ");
     int newLight = analogRead(lightSensor);
-//    Serial.println(newLight);
+    Serial.println(newLight);
     int temp = light- newLight;
 //    if (temp <= 0) temp = temp * (-1);
-    if (temp >= (light / 2)){
+    if (temp >= (light / lightDivider)){
       Serial.println("Clear");
       nextRed = 0;
       nextBlue = 0;
