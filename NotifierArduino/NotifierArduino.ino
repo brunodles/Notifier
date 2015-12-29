@@ -5,12 +5,14 @@
 #define bluetooth_tx 2
 
 #define onboardLed 13
+#define redLed 12
+#define greenLed 11
+#define blueLed 10
 
-#define redLed 11
-#define greenLed 10
-#define blueLed 9
+#define lightSensor 0
 
 #define mainLoopDelay 5
+#define lightDelay 250
 
 int redA;
 int greenA;
@@ -21,6 +23,9 @@ int nextGreen;
 int nextBlue;
 
 boolean shouldBlink;
+
+int time;
+int light = 0;
 
 SoftwareSerial btSerial(bluetooth_rx, bluetooth_tx);
 
@@ -60,6 +65,7 @@ void loop() {
   } else {
     changeColors();
   }
+  checkLight();
 }
 
 void checkSerial(){
@@ -156,4 +162,25 @@ int updateColor(int nextColor, int actualColor, int ledPin) {
         actualColor = actualColor - 1;
     analogWrite(ledPin, actualColor);
     return actualColor;
+}
+
+void checkLight(){
+  int newTime = millis() / lightDelay;
+  if (newTime > time) {
+    time = newTime;
+//    Serial.print("Time ");
+//    Serial.print(newTime);
+//    Serial.print(" ,lightSensor ");
+    int newLight = analogRead(lightSensor);
+//    Serial.println(newLight);
+    int temp = light- newLight;
+//    if (temp <= 0) temp = temp * (-1);
+    if (temp >= (light / 2)){
+      Serial.println("Clear");
+      nextRed = 0;
+      nextBlue = 0;
+      nextGreen = 0;
+    }
+    light = newLight;
+  }
 }
