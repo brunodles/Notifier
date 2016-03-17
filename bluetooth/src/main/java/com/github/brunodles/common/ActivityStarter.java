@@ -1,4 +1,4 @@
-package com.github.brunodles.bluetooth.listener;
+package com.github.brunodles.common;
 
 import android.content.Intent;
 

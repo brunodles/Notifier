@@ -2,10 +2,9 @@ package com.github.brunodles.bluetooth.impl;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.content.Context;
 import android.content.Intent;
 
-import com.github.brunodles.bluetooth.listener.ActivityStarter;
+import com.github.brunodles.common.ActivityStarter;
 import com.github.brunodles.bluetooth.listener.DisabledErrorListener;
 
 /**
