@@ -1,21 +1,27 @@
 package com.github.brunodles.bluetooth;
 
 import android.Manifest;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
+import android.content.IntentFilter;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.github.brunodles.bluetooth.activity_starter.ActivityActivityStarter;
-import com.github.brunodles.bluetooth.activity_starter.ActivityStarter;
-import com.github.brunodles.bluetooth.activity_starter.FragmentActivityStarter;
+import com.github.brunodles.bluetooth.exception.AdapterNotFoundException;
+import com.github.brunodles.bluetooth.impl.DeviceHelperDirect;
+import com.github.brunodles.bluetooth.listener.AdminPermissionErrorListener;
+import com.github.brunodles.bluetooth.listener.DisabledErrorListener;
+import com.github.brunodles.bluetooth.listener.DiscoveryListener;
+import com.github.brunodles.bluetooth.listener.PermissionErrorListener;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+
+import static com.github.brunodles.bluetooth.Connector.connect;
+import static com.github.brunodles.common.PermissionChecker.checkPermission;
+
 
 /**
  * Created by bruno on 23/12/15.
@@ -23,70 +29,143 @@ import java.util.Set;
 public class BluetoothHelper {
     private static final String TAG = "BluetoothHelper";
 
-    public static final int RC_ENABLE_BLUETOOTH = 0;
-    private final ActivityStarter activityStarter;
+    private PermissionErrorListener permissionErrorListener;
+    private DisabledErrorListener DisabledErrorListener;
+    private AdminPermissionErrorListener adminPermissionErrorListener;
+
     private final Context context;
-    public BluetoothAdapter mBluetoothAdapter;
+    private DiscoveryReceiver discoveryReceiver;
+    @Nullable public final BluetoothAdapter mBluetoothAdapter;
 
-    public BluetoothHelper(ActivityStarter activityStarter, Context context) {
-        this.activityStarter = activityStarter;
+    /**
+     * Here I'll try to get the default {@link BluetoothAdapter} from the device,
+     * if it doesn't exists I'll throw a {@link RuntimeException} and you won't be able to use
+     * this class since I can't access the bluetooth adapter.
+     *
+     * @param context I need it, to check the permissions and to bind a intentReceiver.
+     * @throws AdapterNotFoundException if can't get the default {@link BluetoothAdapter}
+     */
+    public BluetoothHelper(Context context) {
         this.context = context;
-        init();
-    }
-
-    public BluetoothHelper(Fragment fragment) {
-        this.activityStarter = new FragmentActivityStarter(fragment);
-        this.context = fragment.getContext();
-        init();
-    }
-
-    public BluetoothHelper(Activity activity) {
-        this.activityStarter = new ActivityActivityStarter(activity);
-        this.context = activity;
-        init();
-    }
-
-    private void init() {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null)
+            throw new AdapterNotFoundException();
     }
 
-    private void check() {
-        if (mBluetoothAdapter == null) {
-            Log.e(TAG, "check: Sorry developer. This device don't have a bluetooth adapter.");
-        } else if (!checkPermission()) {
-            Log.e(TAG, "check: Need to ask for bluetooth permission.");
-        } else if (!mBluetoothAdapter.isEnabled() && activityStarter != null) {
-            requestEnableBluetooth();
-        }
+    /**
+     * Create a new DeviceHelper for a Bonded device.
+     * To use it you
+     *
+     * @param address the Address of the wanted device
+     * @return a {@link DeviceHelperDirect}, or null if the device don't exist on bonded device list.
+     */
+    @Nullable
+    public DeviceHelper deviceHelper(String address) {
+        if (address == null) return null;
+        if (needUserInteraction()) return null;
+        BluetoothDevice device = getBluetoothDevice(address);
+        if (device == null) return null;
+        return new DeviceHelperDirect(device);
     }
 
-    private boolean checkPermission() {
-        int permissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH);
-        return permissionCheck == PackageManager.PERMISSION_GRANTED;
+    @Nullable
+    public DeviceHelper deviceHelper(BluetoothDevice device) {
+        if (device == null) return null;
+        if (needUserInteraction()) return null;
+        return new DeviceHelperDirect(device);
     }
 
-    public void requestEnableBluetooth() {
-        Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        activityStarter.startActivityForResult(enableBluetooth, RC_ENABLE_BLUETOOTH);
-    }
-
-    public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == RC_ENABLE_BLUETOOTH) {
+    private boolean needUserInteraction() {
+        if (!checkPermission(context, Manifest.permission.BLUETOOTH)) {
+            askForBluetoothPermission();
             return true;
-        } else {
-            return false;
         }
+        if (!mBluetoothAdapter.isEnabled()) {
+            requestEnableBluetooth();
+            return true;
+        }
+        return false;
     }
 
-    public DeviceHelper findDevice(String address) {
-        check();
+    private void askForBluetoothPermission() {
+        if (permissionErrorListener == null)
+            Log.e(TAG, "Hey dev, you need to ask for bluetooth permission. To handle this error you need to set a PermissionErrorListener.");
+        else
+            permissionErrorListener.needBluetoothPermission();
+    }
+
+    private void requestEnableBluetooth() {
+        if (DisabledErrorListener == null)
+            Log.e(TAG, "Hey dev, you need to ask to enable bluetooth. To handle this error you need to set a DisabledErrorListener.");
+        else
+            DisabledErrorListener.disabledErrorListener();
+    }
+
+    @Nullable
+    private BluetoothDevice getBluetoothDevice(String address) {
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0)
             for (BluetoothDevice device : pairedDevices)
                 if (device.getAddress().equals(address))
-                    return new DeviceHelper(device);
+                    return device;
         return null;
     }
 
+    public boolean startDiscovery() {
+        return startDiscovery(null);
+    }
 
+    public boolean startDiscovery(DiscoveryListener listener) {
+        if (!checkPermission(context, Manifest.permission.BLUETOOTH_ADMIN)) {
+            askForBluetoothAdminPermission();
+            return false;
+        }
+        if (mBluetoothAdapter.isDiscovering()) mBluetoothAdapter.cancelDiscovery();
+        if (!mBluetoothAdapter.isEnabled()) {
+            requestEnableBluetooth();
+            return false;
+        }
+        registerReceiver(listener);
+        boolean b = mBluetoothAdapter.startDiscovery();
+        if (!b) unregisterReceiver();
+        return b;
+    }
+
+    private void askForBluetoothAdminPermission() {
+        if (adminPermissionErrorListener == null)
+            Log.e(TAG, "Hey dev, you need to ask for bluetooth permission. To handle this error you need to set a PermissionErrorListener.");
+        else
+            adminPermissionErrorListener.needBluetoothAdminPermission();
+    }
+
+    public void registerReceiver(DiscoveryListener listener) {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        discoveryReceiver = new DiscoveryReceiver();
+        if (listener != null) discoveryReceiver.setListener(listener);
+        context.registerReceiver(discoveryReceiver, filter);
+    }
+
+    public boolean stopDiscovery() {
+        if (discoveryReceiver == null) return true;
+        boolean b = mBluetoothAdapter.cancelDiscovery();
+        unregisterReceiver();
+        return b;
+    }
+
+    public void unregisterReceiver() {
+        context.unregisterReceiver(discoveryReceiver);
+    }
+
+    public List<BluetoothDevice> getLastDiscoveryDeviceList() {
+        if (discoveryReceiver == null)
+            return Collections.emptyList();
+        return Collections.unmodifiableList(discoveryReceiver.getDeviceList());
+    }
+
+    public void pair(BluetoothDevice device) {
+        if (mBluetoothAdapter.isDiscovering())
+            stopDiscovery();
+        connect(device);
+    }
 }

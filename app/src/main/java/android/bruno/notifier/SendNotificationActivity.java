@@ -2,26 +2,38 @@ package android.bruno.notifier;
 
 import android.app.Activity;
 import android.app.Notification;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
+
+import com.github.brunodles.bluetooth.BluetoothHelper;
+import com.github.brunodles.bluetooth.listener.DiscoveryListener;
 
 import yuku.ambilwarna.AmbilWarnaDialog;
 
 
-public class SendNotificationActivity extends Activity implements View.OnClickListener {
+public class SendNotificationActivity extends Activity implements View.OnClickListener, AdapterView.OnItemClickListener {
 
     public static final String TAG = "SendNotificationAct";
     Button selectLedColor;
     Button sendNotification;
     Button openSetings;
     Button sendColor;
+    private Button find;
+    private ListView listView;
+    private ArrayAdapter<String> adapter;
+    private BluetoothHelper bluetoothHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +44,11 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
         sendNotification = (Button) findViewById(R.id.sendNotification);
         openSetings = (Button) findViewById(R.id.openSetings);
         sendColor = (Button) findViewById(R.id.sendColor);
+        find = (Button) findViewById(R.id.find);
+        listView = (ListView) findViewById(android.R.id.list);
+
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1);
+        listView.setAdapter(adapter);
 
         selectLedColor.setTag("led");
     }
@@ -43,6 +60,9 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
         sendNotification.setOnClickListener(this);
         openSetings.setOnClickListener(this);
         sendColor.setOnClickListener(this);
+        find.setOnClickListener(this);
+
+        listView.setOnItemClickListener(this);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         selectLedColor.setBackgroundColor(preferences.getInt("led", 0xFFFFFFFF));
@@ -64,7 +84,33 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
             case R.id.openSetings:
                 openSetings();
                 break;
+            case R.id.find:
+                findDevice();
+                break;
         }
+    }
+
+    private void findDevice() {
+        Log.d(TAG, "device: start");
+        bluetoothHelper = new BluetoothHelper(this);
+        adapter.clear();
+        adapter.notifyDataSetChanged();
+        boolean b = bluetoothHelper.startDiscovery(new DiscoveryListener() {
+            @Override
+            public void onReceive(BluetoothDevice device) {
+                Log.d(TAG, String.format("device: receive %s - %s", device.getName(), device.getAddress()));
+                adapter.add(String.format("%16s - %s", device.getAddress(), device.getName()));
+                adapter.notifyDataSetChanged();
+            }
+        });
+        Log.d(TAG, "device: start " + b);
+        if (b) new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "device: stop");
+                bluetoothHelper.stopDiscovery();
+            }
+        }, 12000);
     }
 
     private void sendNotification() {
@@ -117,5 +163,11 @@ public class SendNotificationActivity extends Activity implements View.OnClickLi
     public void openSetings() {
         Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
         startActivity(intent);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        BluetoothDevice bluetoothDevice = bluetoothHelper.getLastDiscoveryDeviceList().get(position);
+        bluetoothHelper.pair(bluetoothDevice);
     }
 }

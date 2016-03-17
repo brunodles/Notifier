@@ -27,10 +27,10 @@ int nextBlue;
 
 boolean shouldBlink;
 
-int time;
+long time;
 int light = 0;
 
-int receivedAt = 0;
+long receivedAt = 0;
 
 SoftwareSerial btSerial(bluetooth_rx, bluetooth_tx);
 
@@ -64,10 +64,7 @@ void loop() {
     checkBluetooth();
   delay(mainLoopDelay);
   if (shouldBlink){
-    analogWrite(redLed, random(0,255));
-    analogWrite(greenLed, random(0,255));
-    analogWrite(blueLed, random(0,255));
-    delay(20);
+    checkBlink();
   } else {
     changeColors();
   }
@@ -103,6 +100,13 @@ void checkData(int incomingByte, String value) {
         print("Blue", value);
         nextBlue = value.toInt();
       break;
+      case 'c':
+        Serial.print("Hex '#");
+        Serial.print(toHex(nextRed));
+        Serial.print(toHex(nextGreen));
+        Serial.print(toHex(nextBlue));
+        Serial.println("'");
+      break;
       case '.':
         colorCommand(value);
         break;
@@ -115,16 +119,11 @@ void checkData(int incomingByte, String value) {
         Serial.println(btSerial.readString());
       break;
       case '#':
-        Serial.println("Hex String ");
-        Serial.print("r ");
+        Serial.print("Hex String #");
+        Serial.println(value);
         nextRed = strtoul(value.substring(0,2).c_str(), 0, 16);
-        Serial.println(nextRed);
-        Serial.print("g ");
         nextGreen = strtoul(value.substring(2,4).c_str(), 0, 16);
-        Serial.println(nextGreen);
-        Serial.print("b ");
         nextBlue = strtoul(value.substring(4,6).c_str(), 0, 16);
-        Serial.println(nextBlue);
       break;
       default:
         Serial.print("I received: (");
@@ -134,6 +133,23 @@ void checkData(int incomingByte, String value) {
         Serial.print(" ");
         Serial.println(value);
   }
+}
+
+String toHex(int value){
+  return leadingZero(String(value, HEX), 2);
+}
+
+String leadingZero(String string, int count){
+  while (string.length() < count)
+    string = "0" + string;
+  return string;
+}
+
+void checkBlink(){
+    analogWrite(redLed, random(0,255));
+    analogWrite(greenLed, random(0,255));
+    analogWrite(blueLed, random(0,255));
+    delay(20);
 }
 
 void colorCommand(String command){
@@ -174,15 +190,15 @@ int updateColor(int nextColor, int actualColor, int ledPin) {
 }
 
 void checkLight(){
-  int newTime = millis() / lightDelay;
+  long newTime = millis() / lightDelay;
   if (newTime > time) {
     time = newTime;
+    int newLight = map(analogRead(lightSensor), 0, 1023, 0, 100);
+    int temp = light- newLight;
 //    Serial.print("Time ");
 //    Serial.print(newTime);
 //    Serial.print(" ,lightSensor ");
-    int newLight = analogRead(lightSensor);
 //    Serial.println(newLight);
-    int temp = light- newLight;
 //    if (temp <= 0) temp = temp * (-1);
     if (temp >= (light / lightDivider)){
       Serial.println("Clear");

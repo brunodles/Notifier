@@ -1,7 +1,9 @@
-package com.github.brunodles.bluetooth.activity_starter;
+package com.github.brunodles.bluetooth.impl;
 
 import android.app.Activity;
 import android.content.Intent;
+
+import com.github.brunodles.bluetooth.listener.ActivityStarter;
 
 /**
  * Created by bruno on 24/12/15.

@@ -9,7 +9,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.github.brunodles.bluetooth.BluetoothHelper;
-import com.github.brunodles.bluetooth.DeviceHelper;
+import com.github.brunodles.bluetooth.impl.DeviceHelperDirect;
 
 import java.io.IOException;
 
@@ -18,7 +18,7 @@ public class SendTextActivity2 extends Activity {
     TextView myLabel;
     EditText myTextbox;
     private BluetoothHelper bluetoothHelper;
-    private DeviceHelper device;
+    private DeviceHelperDirect device;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,7 +68,7 @@ public class SendTextActivity2 extends Activity {
     }
 
     void findBT() {
-        device = bluetoothHelper.findDevice(Application.ARDUINO_BLUETOOTH_ADDRESS);
+        device = bluetoothHelper.deviceHelper(Application.ARDUINO_BLUETOOTH_ADDRESS);
         if (device != null) myLabel.setText("Bluetooth Device Found");
     }
 
