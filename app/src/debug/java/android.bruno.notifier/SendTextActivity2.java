@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.github.brunodles.bluetooth.BluetoothHelper;
+import com.github.brunodles.bluetooth.DeviceHelper;
 import com.github.brunodles.bluetooth.impl.DeviceHelperDirect;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ public class SendTextActivity2 extends Activity {
     TextView myLabel;
     EditText myTextbox;
     private BluetoothHelper bluetoothHelper;
-    private DeviceHelperDirect device;
+    private DeviceHelper device;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

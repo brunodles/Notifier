@@ -6,9 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.github.brunodles.bluetooth.BluetoothHelper;
-import com.github.brunodles.bluetooth.impl.DeviceHelperDirect;
-
-import java.io.IOException;
+import com.github.brunodles.bluetooth.DeviceHelper;
 
 
 public class ArduinoService extends IntentService {
@@ -39,22 +37,11 @@ public class ArduinoService extends IntentService {
 
     private void sendColorToArduino(final String color) {
         Log.d(TAG, "sendColorToArduino() called with: " + "color = [" + color + "]");
-        DeviceHelperDirect device = bluetoothHelper.deviceHelper(Application.ARDUINO_BLUETOOTH_ADDRESS);
+        DeviceHelper device = bluetoothHelper.deviceHelper(Application.ARDUINO_BLUETOOTH_ADDRESS);
         if (device == null) return;
-        try {
-            device.openBT();
-            device.sendData(color);
-        } catch (IOException e) {
-            Log.e(TAG, "onCreate: ", e);
-        }
-        try {
-            Thread.sleep(500L);
-        } catch (InterruptedException e) {
-        }
-        try {
-            device.closeBT();
-        } catch (IOException e) {
-        }
+        device.openBT();
+        device.sendData(color);
+        device.closeBT();
     }
 
     @Override

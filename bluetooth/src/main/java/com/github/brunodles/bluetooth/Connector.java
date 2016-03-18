@@ -5,6 +5,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 
+
 import com.github.brunodles.bluetooth.impl.DeviceHelperDirect;
 
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.lang.reflect.Method;
  */
 final class Connector {
     private static final String TAG = "Connector";
+
     private Connector() {
     }
 
@@ -47,15 +49,11 @@ final class Connector {
             device.openBT();
             device.sendData("");
             result = true;
-        } catch (IOException e) {
         } finally {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        device.closeBT();
-                    } catch (IOException e) {
-                    }
+                    device.closeBT();
                 }
             }, 500L);
         }

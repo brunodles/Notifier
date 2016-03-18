@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.github.brunodles.bluetooth.exception.AdapterNotFoundException;
 import com.github.brunodles.bluetooth.impl.DeviceHelperDirect;
+import com.github.brunodles.bluetooth.impl.DeviceHelperHandler;
 import com.github.brunodles.bluetooth.listener.AdminPermissionErrorListener;
 import com.github.brunodles.bluetooth.listener.DisabledErrorListener;
 import com.github.brunodles.bluetooth.listener.DiscoveryListener;
@@ -65,14 +66,14 @@ public class BluetoothHelper {
         if (needUserInteraction()) return null;
         BluetoothDevice device = getBluetoothDevice(address);
         if (device == null) return null;
-        return new DeviceHelperDirect(device);
+        return new DeviceHelperHandler(device);
     }
 
     @Nullable
     public DeviceHelper deviceHelper(BluetoothDevice device) {
         if (device == null) return null;
         if (needUserInteraction()) return null;
-        return new DeviceHelperDirect(device);
+        return new DeviceHelperHandler(device);
     }
 
     private boolean needUserInteraction() {
@@ -154,7 +155,10 @@ public class BluetoothHelper {
     }
 
     public void unregisterReceiver() {
-        context.unregisterReceiver(discoveryReceiver);
+        try {
+            context.unregisterReceiver(discoveryReceiver);
+        } catch (IllegalArgumentException e) {
+        }
     }
 
     public List<BluetoothDevice> getLastDiscoveryDeviceList() {

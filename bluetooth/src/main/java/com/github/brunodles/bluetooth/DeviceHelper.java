@@ -2,18 +2,16 @@ package com.github.brunodles.bluetooth;
 
 import android.support.annotation.Nullable;
 
-import java.io.IOException;
-
 /**
  * Created by bruno on 17/03/16.
  */
 public interface DeviceHelper {
-    void openBT() throws IOException;
+    void openBT();
 
-    void sendData(String msg) throws IOException;
+    void sendData(String msg);
 
     @Nullable
-    String readData() throws IOException;
+    String readData();
 
-    void closeBT() throws IOException;
+    void closeBT();
 }
