@@ -10,7 +10,7 @@
 #define blueLed 10
 
 #define lightSensor 0
-m
+
 #define mainLoopDelay 5
 
 #define commandLedDelay 5000
@@ -29,8 +29,6 @@ boolean shouldBlink;
 
 long time;
 int light = 0;
-
-long receivedAt = 0;
 
 SoftwareSerial btSerial(bluetooth_rx, bluetooth_tx);
 
@@ -68,22 +66,18 @@ void loop() {
   } else {
     changeColors();
   }
-//  checkLight();
-  checkCommandLed();
 }
 
 void checkSerial(){
   int incomingByte = Serial.read();
   String value = Serial.readString();
   checkData(incomingByte, value);
-  receivedAt = millis();
 }
 
 void checkBluetooth(){
   int incomingByte = btSerial.read();
   String value = btSerial.readString();
   checkData(incomingByte, value);
-  receivedAt = millis();
 }
 
 void checkData(int incomingByte, String value) {
@@ -187,32 +181,4 @@ int updateColor(int nextColor, int actualColor, int ledPin) {
         actualColor = actualColor - 1;
     analogWrite(ledPin, actualColor);
     return actualColor;
-}
-
-void checkLight(){
-  long newTime = millis() / lightDelay;
-  if (newTime > time) {
-    time = newTime;
-    int newLight = map(analogRead(lightSensor), 0, 1023, 0, 100);
-    int temp = light- newLight;
-//    Serial.print("Time ");
-//    Serial.print(newTime);
-//    Serial.print(" ,lightSensor ");
-//    Serial.println(newLight);
-//    if (temp <= 0) temp = temp * (-1);
-    if (temp >= (light / lightDivider)){
-      Serial.println("Clear");
-      nextRed = 0;
-      nextBlue = 0;
-      nextGreen = 0;
-    }
-    light = newLight;
-  }
-}
-
-void checkCommandLed(){
-  if ((receivedAt + commandLedDelay) > millis())
-    digitalWrite(onboardLed, HIGH);
-  else
-    digitalWrite(onboardLed, LOW);
 }
