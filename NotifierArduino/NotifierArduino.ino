@@ -10,7 +10,7 @@
 #define blueLed 10
 
 #define lightSensor 0
-
+m
 #define mainLoopDelay 5
 
 #define commandLedDelay 5000
@@ -68,7 +68,7 @@ void loop() {
   } else {
     changeColors();
   }
-  checkLight();
+//  checkLight();
   checkCommandLed();
 }
 

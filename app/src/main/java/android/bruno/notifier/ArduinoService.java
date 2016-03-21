@@ -15,6 +15,7 @@ public class ArduinoService extends IntentService {
 
     public static final String EXTRA_COLOR_HEX = "EXTRA_COLOR_HEX";
     private BluetoothHelper bluetoothHelper;
+    private DeviceHelper device;
 
     public ArduinoService() {
         super("ArduinoService");
@@ -24,6 +25,15 @@ public class ArduinoService extends IntentService {
     public void onCreate() {
         super.onCreate();
         bluetoothHelper = new BluetoothHelper(this);
+        device = createDevice();
+        device.openBT();
+    }
+
+    private DeviceHelper createDevice() {
+        DeviceHelper device = bluetoothHelper.deviceHelper(Application.ARDUINO_BLUETOOTH_ADDRESS);
+        if (device == null) return new LogDevice();
+        if (BuildConfig.DEBUG) return new LogDevice(device);
+        return device;
     }
 
     @Override
@@ -37,16 +47,13 @@ public class ArduinoService extends IntentService {
 
     private void sendColorToArduino(final String color) {
         Log.d(TAG, "sendColorToArduino() called with: " + "color = [" + color + "]");
-        DeviceHelper device = bluetoothHelper.deviceHelper(Application.ARDUINO_BLUETOOTH_ADDRESS);
-        if (device == null) return;
-        device.openBT();
         device.sendData(color);
-        device.closeBT();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         bluetoothHelper.stopDiscovery();
+        device.closeBT();
     }
 }

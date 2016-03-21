@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.service.notification.StatusBarNotification;
+import android.util.Log;
 
 /**
  * Created by bruno on 17/08/14.
@@ -17,7 +18,7 @@ public class NotificationListener extends android.service.notification.Notificat
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
-//        Log.d(TAG, "NotificationPosted");
+        Log.d(TAG, "NotificationPosted");
         lastKey = NotificationHelper.buildKey(sbn);
         Notification notification = sbn.getNotification();
         sendNotificationToArduino(notification);
@@ -30,13 +31,13 @@ public class NotificationListener extends android.service.notification.Notificat
         color = notification.color;
         ColorValues cv = ColorValues.from(color);
 
-//        Log.d(TAG, String.format("Notification colors\nLedColor = %06X\nR = %s, G = %s, B = %s",
-//                color, cv.red, cv.green, cv.blue));
+        Log.d(TAG, String.format("Notification colors\nLedColor = %06X\nR = %s, G = %s, B = %s",
+                color, cv.red, cv.green, cv.blue));
 
         if (cv.isBlack()) {
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
             color = preferences.getInt("led", 0x000000);
-//            Log.d(TAG, String.format("Using default color = %06X", color));
+            Log.d(TAG, String.format("Using default color = %06X", color));
             cv = ColorValues.from(color);
         }
         sendColorToArduino(cv.toHexRGB());
